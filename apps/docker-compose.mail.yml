@@ -1,0 +1,29 @@
+version: "3.9"
+
+# Stack de e-mail próprio (Mailu ou docker-mailserver).
+services:
+  # TODO: selecionar stack (Mailu ou docker-mailserver) conforme requisitos de DNS/recursos.
+  # mailserver:
+  #   image: mailu/mailu:latest
+  #   restart: unless-stopped
+  #   env_file:
+  #     - mail.env  # manter credenciais separadas
+  #   volumes:
+  #     - /srv/homelab/mail/data:/data
+  #     - /srv/homelab/mail/state:/var/lib/mailstate
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.mail.rule=Host(`mail.${HOMELAB_DOMAIN}`)"
+  #     - "traefik.http.routers.mail.entrypoints=websecure"
+  #   networks:
+  #     - proxy_net
+  #     - internal_net
+  #   # Portas SMTP/IMAP provavelmente exigirão mapeamentos diretos, fora do Traefik.
+
+networks:
+  proxy_net:
+    external: true
+    name: ${PROXY_NETWORK}
+  internal_net:
+    external: true
+    name: ${INTERNAL_NETWORK}

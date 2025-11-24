@@ -1,0 +1,27 @@
+version: "3.9"
+
+# Stack de cofres/segredos (Vaultwarden compatível com Bitwarden).
+services:
+  # TODO: habilitar imagem vaultwarden/server:alpine (leve para ARM).
+  # vaultwarden:
+  #   image: vaultwarden/server:alpine
+  #   restart: unless-stopped
+  #   environment:
+  #     - WEBSOCKET_ENABLED=true
+  #   volumes:
+  #     - /srv/homelab/vaultwarden:/data
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.vaultwarden.rule=Host(`vault.${HOMELAB_DOMAIN}`)"
+  #     - "traefik.http.routers.vaultwarden.entrypoints=websecure"
+  #   networks:
+  #     - proxy_net
+  #     - internal_net
+
+networks:
+  proxy_net:
+    external: true
+    name: ${PROXY_NETWORK}
+  internal_net:
+    external: true
+    name: ${INTERNAL_NETWORK}

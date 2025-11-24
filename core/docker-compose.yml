@@ -1,0 +1,51 @@
+version: "3.9"
+
+# Stack CORE: Nextcloud + dependências principais.
+# Configuração mínima/sugestiva; detalhes (volumes, env, tunning) serão adicionados nas próximas histórias.
+services:
+  # TODO: Habilitar Nextcloud com imagem leve (ex: nextcloud:fpm) + proxy nginx se necessário.
+  # nextcloud:
+  #   image: nextcloud:apache
+  #   restart: unless-stopped
+  #   environment:
+  #     - POSTGRES_HOST=postgres
+  #     - REDIS_HOST=redis
+  #   volumes:
+  #     - /srv/homelab/nextcloud/data:/var/www/html
+  #   networks:
+  #     - proxy_net
+  #     - internal_net
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.${HOMELAB_DOMAIN}`)"
+  #     - "traefik.http.routers.nextcloud.entrypoints=web"
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=CHANGE_ME
+    volumes:
+      - /srv/homelab/nextcloud/db:/var/lib/postgresql/data
+    networks:
+      - internal_net
+    # TODO: mover senhas para secrets/variáveis externas.
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - /srv/homelab/nextcloud/redis:/data
+    networks:
+      - internal_net
+
+networks:
+  proxy_net:
+    external: true
+    name: ${PROXY_NETWORK}
+  internal_net:
+    external: true
+    name: ${INTERNAL_NETWORK}
