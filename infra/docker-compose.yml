@@ -10,14 +10,20 @@ services:
     command:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:${TRAEFIK_HTTP_PORT}
-      - --entrypoints.websecure.address=:${TRAEFIK_HTTPS_PORT}
-      # TODO: habilitar ACME/Let's Encrypt quando houver DNS fixo
+      - --entrypoints.web.address=:${TRAEFIK_HTTP_PORT:-80}
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:${TRAEFIK_HTTPS_PORT:-443}
+      - --entrypoints.websecure.http.tls=true
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@example.local}
+      - --certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.caserver=${ACME_CA_SERVER:-https://acme-staging-v02.api.letsencrypt.org/directory}
       - --api.dashboard=true
     ports:
-      - "${TRAEFIK_HTTP_PORT}:${TRAEFIK_HTTP_PORT}"
-      - "${TRAEFIK_HTTPS_PORT}:${TRAEFIK_HTTPS_PORT}"
-      - "${TRAEFIK_DASHBOARD_PORT}:8080" # dashboard local
+      - "${TRAEFIK_HTTP_PORT:-80}:${TRAEFIK_HTTP_PORT:-80}"
+      - "${TRAEFIK_HTTPS_PORT:-443}:${TRAEFIK_HTTPS_PORT:-443}"
+      - "${TRAEFIK_DASHBOARD_PORT:-8080}:8080" # dashboard local
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /srv/homelab/traefik:/etc/traefik
@@ -27,7 +33,7 @@ services:
     labels:
       # Dashboard exposto apenas internamente (ajustar conforme necessidade)
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${HOMELAB_DOMAIN}`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${HOMELAB_DOMAIN:-example.local}`)"
       - "traefik.http.routers.traefik.entrypoints=web"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$example$$/hashedpass"
@@ -38,8 +44,10 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`whoami.${HOMELAB_DOMAIN}`)"
-      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.${HOMELAB_DOMAIN:-example.local}`)"
+      - "traefik.http.routers.whoami.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls=true"
+      - "traefik.http.routers.whoami.tls.certresolver=letsencrypt"
       - "traefik.http.services.whoami.loadbalancer.server.port=80"
     networks:
       - proxy_net
@@ -47,8 +55,8 @@ services:
 
 networks:
   proxy_net:
-    name: ${PROXY_NETWORK}
+    name: ${PROXY_NETWORK:-proxy_net}
     driver: bridge
   internal_net:
-    name: ${INTERNAL_NETWORK}
+    name: ${INTERNAL_NETWORK:-internal_net}
     driver: bridge

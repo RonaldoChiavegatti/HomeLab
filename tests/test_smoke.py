@@ -7,9 +7,12 @@ import subprocess
 import time
 
 import requests
+import urllib3
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 COMPOSE_FILE = os.path.join(ROOT, "infra", "docker-compose.yml")
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def _run(cmd: list[str]):
@@ -42,3 +45,23 @@ def test_whoami_route():
     resp = requests.get(f"http://localhost:{http_port}", headers=headers, timeout=5)
     assert resp.status_code == 200
     assert "Hostname" in resp.text or "whoami" in resp.text
+
+
+def test_whoami_https_certificate():
+    """Valida roteamento HTTPS + emissão de certificado (mesmo que autoassinado/staging)."""
+    domain = os.getenv("HOMELAB_DOMAIN", "example.local")
+    https_port = os.getenv("TRAEFIK_HTTPS_PORT", "443")
+    headers = {"Host": f"whoami.{domain}"}
+
+    resp = requests.get(
+        f"https://localhost:{https_port}", headers=headers, timeout=10, verify=False, stream=True
+    )
+    try:
+        assert resp.status_code == 200
+        # Certificado deve existir mesmo que não confiável (staging/autoassinado).
+        connection = resp.raw.connection
+        cert = connection.sock.getpeercert() if connection and connection.sock else None
+        assert cert is not None
+        assert cert.get("subject")
+    finally:
+        resp.close()
