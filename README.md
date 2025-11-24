@@ -44,6 +44,7 @@ Estrutura esperada no host (`/srv/homelab`):
 ├── vaultwarden/
 ├── media/
 │   ├── jellyfin/
+│   ├── library/
 │   └── transcodes/
 ├── homeassistant/
 └── mail/
