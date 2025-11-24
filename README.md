@@ -57,8 +57,8 @@ Estrutura esperada no host (`/srv/homelab`):
   árvore inicial em `/srv/homelab`.
 
 ## Provisionamento do host (US-001) e Docker (US-002)
-- Para preparar o Raspberry Pi (Debian/Ubuntu) com usuário `homelab`, SSH por chave e atualizações automáticas, use os scripts e
-m `infra/provision/`.
+- Para preparar o Raspberry Pi (Debian/Ubuntu) com usuário `homelab`, SSH por chave e atualizações automáticas, use os scripts em
+  `infra/provision/`.
 - Automação de Docker/Compose e validação de hello-world também ficam em `infra/provision/`.
 - Execução típica:
   ```bash
@@ -75,6 +75,30 @@ m `infra/provision/`.
   # Configurar firewall/NAT com UFW (US-012)
   make configure-firewall UFW_WAN_INTERFACE=eth0  # aplica política deny incoming, libera portas necessárias e NAT do WireGuard
   make validate-firewall  # varre portas TCP/UDP abertas para garantir exposição mínima
+  ```
+
+## Backup do Nextcloud (US-022)
+- Script `core/nextcloud/backup_nextcloud.py` faz snapshot incremental com `rsync` + hardlinks.
+- Variáveis de ambiente configuráveis no `.env`: `NEXTCLOUD_BACKUP_SOURCE`, `NEXTCLOUD_BACKUP_TARGET`, `NEXTCLOUD_BACKUP_LOG`
+  e `NEXTCLOUD_BACKUP_RETENTION`.
+- Execução manual:
+  ```bash
+  make backup-nextcloud  # usa defaults do .env
+  python core/nextcloud/backup_nextcloud.py --dry-run  # apenas imprime comando rsync
+  ```
+- Agendamento via systemd:
+  ```bash
+  sudo cp core/nextcloud/nextcloud-backup.service /etc/systemd/system/
+  sudo cp core/nextcloud/nextcloud-backup.timer /etc/systemd/system/
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now nextcloud-backup.timer
+  ```
+- Logs: append em `${NEXTCLOUD_BACKUP_LOG}` e status em `${NEXTCLOUD_BACKUP_TARGET}/last_run.json`.
+- Restore manual (teste recomendado após primeiro backup):
+  ```bash
+  sudo systemctl stop docker  # ou ao menos containers do Nextcloud
+  rsync -a <PATH_DO_SNAPSHOT>/ /srv/homelab/nextcloud/data/
+  sudo systemctl start docker
   ```
 
 ## Uso rápido
@@ -104,4 +128,3 @@ make test
 - Integrar Gitea/Forgejo, Vaultwarden, Jellyfin, Home Assistant e Mail na stack apps.
 - Automatizar backups e monitoramento.
 ```
-

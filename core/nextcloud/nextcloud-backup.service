@@ -1,0 +1,17 @@
+[Unit]
+Description=Backup incremental do Nextcloud (rsync + hardlinks)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/srv/homelab/core/nextcloud
+EnvironmentFile=/srv/homelab/.env
+ExecStart=/usr/bin/python3 /srv/homelab/core/nextcloud/backup_nextcloud.py
+
+# Coloca logs no journal; o script também escreve em NEXTCLOUD_BACKUP_LOG.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
