@@ -6,7 +6,10 @@ set -euo pipefail
 
 HOMELAB_USER=${HOMELAB_USER:-homelab}
 SSH_PUBLIC_KEY_PATH=${SSH_PUBLIC_KEY_PATH:-${HOME}/.ssh/id_rsa.pub}
-PACKAGES=("openssh-server" "sudo" "unattended-upgrades" "ca-certificates" "curl")
+PACKAGES=("openssh-server" "sudo" "unattended-upgrades" "ca-certificates" "curl" "ufw")
+UFW_WAN_INTERFACE=${UFW_WAN_INTERFACE:-eth0}
+UFW_DASHBOARD_CIDR=${UFW_DASHBOARD_CIDR:-192.168.0.0/16}
+WIREGUARD_SUBNET=${WIREGUARD_SUBNET:-10.13.13.0/24}
 
 require_root() {
     if [[ "${EUID}" -ne 0 ]]; then
@@ -94,6 +97,49 @@ AUTO
     systemctl start unattended-upgrades || true
 }
 
+ensure_nat_rules() {
+    local rules_file="/etc/ufw/before.rules"
+    local marker="# HOMELAB-WIREGUARD-NAT"
+    if grep -q "${marker}" "${rules_file}"; then
+        return
+    fi
+
+    echo "[INFO] Adicionando NAT para WireGuard em ${rules_file} (interface ${UFW_WAN_INTERFACE}, subnet ${WIREGUARD_SUBNET})."
+    cat >> "${rules_file}" <<RULES
+${marker}
+*nat
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -s ${WIREGUARD_SUBNET} -o ${UFW_WAN_INTERFACE} -j MASQUERADE
+COMMIT
+RULES
+}
+
+configure_ufw_sysctl() {
+    local sysctl_file="/etc/ufw/sysctl.conf"
+    echo "[INFO] Habilitando forwarding IPv4/IPv6 no UFW para permitir NAT da VPN."
+    sed -i 's/^#\?net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/' "${sysctl_file}"
+    sed -i 's/^#\?net.ipv6.conf.default.forwarding=.*/net.ipv6.conf.default.forwarding=1/' "${sysctl_file}"
+    sed -i 's/^#\?net.ipv6.conf.all.forwarding=.*/net.ipv6.conf.all.forwarding=1/' "${sysctl_file}"
+}
+
+configure_firewall() {
+    echo "[INFO] Configurando firewall UFW (política padrão deny incoming)."
+    ufw --force reset
+    ufw default deny incoming
+    ufw default allow outgoing
+
+    ufw allow 22/tcp comment 'SSH de gestão'
+    ufw allow ${TRAEFIK_HTTP_PORT:-80}/tcp comment 'HTTP Traefik'
+    ufw allow ${TRAEFIK_HTTPS_PORT:-443}/tcp comment 'HTTPS Traefik'
+    ufw allow from ${UFW_DASHBOARD_CIDR} to any port ${TRAEFIK_DASHBOARD_PORT:-8080} proto tcp comment 'Dashboard Traefik (LAN)'
+    ufw allow ${WIREGUARD_PORT:-51820}/udp comment 'WireGuard VPN'
+
+    ensure_nat_rules
+    configure_ufw_sysctl
+    ufw --force enable
+    ufw status verbose
+}
+
 main() {
     require_root
     check_os
@@ -102,6 +148,7 @@ main() {
     configure_ssh_keys
     harden_sshd
     configure_unattended_upgrades
+    configure_firewall
     echo "[SUCESSO] Host pronto para receber os containers do homelab."
 }
 

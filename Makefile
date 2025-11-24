@@ -22,10 +22,16 @@ prepare-data-dirs:
 	cd infra/provision && python3 validate_data_dirs.py --create-missing
 
 validate-data-dirs:
-	cd infra/provision && python3 validate_data_dirs.py
+        cd infra/provision && python3 validate_data_dirs.py
+
+configure-firewall:
+        cd infra/provision && sudo HOMELAB_USER=$(HOMELAB_USER) ./host_provision.sh
+
+validate-firewall:
+        cd infra/provision && python3 validate_firewall.py
 
 up-infra:
-	$(COMPOSE_INFRA) up -d
+        $(COMPOSE_INFRA) up -d
 
 down-infra:
 	$(COMPOSE_INFRA) down
@@ -57,6 +63,6 @@ test:
 
 # Backup dummy para demonstrar gancho futuro
 backup-dummy:
-	@echo "TODO: implementar rotina de backup incremental em /srv/homelab" && exit 0
+        @echo "TODO: implementar rotina de backup incremental em /srv/homelab" && exit 0
 
-.PHONY: up-infra down-infra logs-infra up-core down-core logs-core up-apps down-apps logs-apps test backup-dummy provision-host validate-host docker-setup validate-docker prepare-data-dirs validate-data-dirs
+.PHONY: up-infra down-infra logs-infra up-core down-core logs-core up-apps down-apps logs-apps test backup-dummy provision-host validate-host docker-setup validate-docker prepare-data-dirs validate-data-dirs configure-firewall validate-firewall
