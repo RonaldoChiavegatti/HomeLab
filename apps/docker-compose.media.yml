@@ -2,7 +2,6 @@ version: "3.9"
 
 # Stack de mídia (Jellyfin opcionalmente Plex). Priorizar imagens otimizadas para ARM.
 services:
-  # TODO: adicionar hardware acceleration configs (VAAPI) conforme GPU do Raspberry Pi.
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     restart: unless-stopped
@@ -10,6 +9,19 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ:-UTC}
+      - JELLYFIN_PublishedServerUrl=media.${HOMELAB_DOMAIN}
+    devices:
+      # VAAPI/V4L2: defaults assumem Raspberry Pi 4/5 com /dev/dri habilitado.
+      # Ajuste via .env se o device path diferir ou desative removendo entradas.
+      - ${JELLYFIN_DRI_DEVICE:-/dev/dri/renderD128}:${JELLYFIN_DRI_DEVICE:-/dev/dri/renderD128}
+      - ${JELLYFIN_GPU_DEVICE:-/dev/dri/card0}:${JELLYFIN_GPU_DEVICE:-/dev/dri/card0}
+      - ${JELLYFIN_V4L2_MAIN:-/dev/video11}:${JELLYFIN_V4L2_MAIN:-/dev/video11}
+      - ${JELLYFIN_V4L2_IMAGE:-/dev/video31}:${JELLYFIN_V4L2_IMAGE:-/dev/video31}
+    group_add:
+      # "video" group. Permite acesso direto aos devices de GPU/V4L2 sem privilegiar o contêiner.
+      - "${VIDEO_GID:-44}"
+    mem_limit: ${JELLYFIN_MEMORY_LIMIT:-2g}
+    cpus: ${JELLYFIN_CPU_LIMIT:-1.5}
     volumes:
       - /srv/homelab/media/jellyfin:/config
       - /srv/homelab/media/library:/media
