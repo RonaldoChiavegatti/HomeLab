@@ -51,7 +51,15 @@ Estrutura esperada no host (`/srv/homelab`):
 ## Pré-requisitos
 - Docker e Docker Compose v2 instalados.
 - Usuário local `homelab` com permissões para `/srv/homelab`.
-- Arquivo `.env` preenchido a partir de `.env.example` (sem segredos aqui). 
+- Arquivo `.env` preenchido a partir de `.env.example` (sem segredos aqui).
+
+## Provisionamento do host (US-001)
+- Para preparar o Raspberry Pi (Debian/Ubuntu) com usuário `homelab`, SSH por chave e atualizações automáticas, use os scripts em `infra/provision/`.
+- Execução típica:
+  ```bash
+  make provision-host HOMELAB_USER=homelab  # requer sudo e variável SSH_PUBLIC_KEY_PATH apontando para sua chave
+  make validate-host  # roda verificação do SO, pacotes e hardening de SSH
+  ```
 
 ## Uso rápido
 ```
