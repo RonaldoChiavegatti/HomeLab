@@ -1,0 +1,1 @@
+"""Configurações específicas do Nextcloud."""
