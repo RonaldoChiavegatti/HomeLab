@@ -71,6 +71,10 @@ m `infra/provision/`.
   # Criar e/ou validar estrutura de dados em /srv/homelab (US-003)
   make prepare-data-dirs  # cria diretórios ausentes em /srv/homelab e valida filesystem do SSD
   make validate-data-dirs  # apenas valida filesystem + diretórios
+
+  # Configurar firewall/NAT com UFW (US-012)
+  make configure-firewall UFW_WAN_INTERFACE=eth0  # aplica política deny incoming, libera portas necessárias e NAT do WireGuard
+  make validate-firewall  # varre portas TCP/UDP abertas para garantir exposição mínima
   ```
 
 ## Uso rápido
