@@ -3,20 +3,27 @@ version: "3.9"
 # Stack de mídia (Jellyfin opcionalmente Plex). Priorizar imagens otimizadas para ARM.
 services:
   # TODO: adicionar hardware acceleration configs (VAAPI) conforme GPU do Raspberry Pi.
-  # jellyfin:
-  #   image: jellyfin/jellyfin:latest
-  #   restart: unless-stopped
-  #   volumes:
-  #     - /srv/homelab/media/jellyfin:/config
-  #     - /srv/homelab/media/library:/media
-  #     - /srv/homelab/media/transcodes:/cache
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.jellyfin.rule=Host(`media.${HOMELAB_DOMAIN}`)"
-  #     - "traefik.http.routers.jellyfin.entrypoints=web"
-  #   networks:
-  #     - proxy_net
-  #     - internal_net
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-UTC}
+    volumes:
+      - /srv/homelab/media/jellyfin:/config
+      - /srv/homelab/media/library:/media
+      - /srv/homelab/media/transcodes:/cache
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.rule=Host(`media.${HOMELAB_DOMAIN}`)"
+      - "traefik.http.routers.jellyfin.entrypoints=websecure"
+      - "traefik.http.routers.jellyfin.tls=true"
+      - "traefik.http.routers.jellyfin.tls.certresolver=letsencrypt"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+    networks:
+      - proxy_net
+      - internal_net
 
 networks:
   proxy_net:

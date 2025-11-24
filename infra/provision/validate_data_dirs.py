@@ -23,6 +23,7 @@ EXPECTED_DIRECTORIES = [
     "git",
     "vaultwarden",
     "media/jellyfin",
+    "media/library",
     "media/transcodes",
     "homeassistant",
     "mail",
