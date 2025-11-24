@@ -52,6 +52,8 @@ Estrutura esperada no host (`/srv/homelab`):
 - Docker e Docker Compose v2 instalados (veja automação em `infra/provision/docker_setup.sh`).
 - Usuário local `homelab` com permissões para `/srv/homelab`.
 - Arquivo `.env` preenchido a partir de `.env.example` (sem segredos aqui).
+- SSD dedicado montado em `/srv` com filesystem `ext4` (ou definido via flag). Use `make prepare-data-dirs` para criar a
+  árvore inicial em `/srv/homelab`.
 
 ## Provisionamento do host (US-001) e Docker (US-002)
 - Para preparar o Raspberry Pi (Debian/Ubuntu) com usuário `homelab`, SSH por chave e atualizações automáticas, use os scripts em `infra/provision/`.
@@ -63,6 +65,10 @@ Estrutura esperada no host (`/srv/homelab`):
 
   make docker-setup HOMELAB_USER=homelab  # instala Docker Engine + Compose v2 e coloca o usuário no grupo docker
   make validate-docker HOMELAB_USER=homelab  # verifica docker/compose sem sudo e roda hello-world
+
+  # Criar e/ou validar estrutura de dados em /srv/homelab (US-003)
+  make prepare-data-dirs  # cria diretórios ausentes em /srv/homelab e valida filesystem do SSD
+  make validate-data-dirs  # apenas valida filesystem + diretórios
   ```
 
 ## Uso rápido
