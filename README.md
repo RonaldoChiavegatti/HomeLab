@@ -1,6 +1,7 @@
 # homelab-infra
 
-Infraestrutura mínima em contêineres para um homelab baseado em Raspberry Pi (Debian/Ubuntu). Este repositório entrega apenas o **esqueleto inicial**: diretórios, composes separados por domínio e automações básicas para permitir iterações futuras.
+Infraestrutura mínima em contêineres para um homelab baseado em Raspberry Pi (Debian/Ubuntu). Este repositório entrega apenas o
+**esqueleto inicial**: diretórios, composes separados por domínio e automações básicas para permitir iterações futuras.
 
 ## Filosofia
 - Somente serviços open source, empacotados via Docker.
@@ -56,7 +57,8 @@ Estrutura esperada no host (`/srv/homelab`):
   árvore inicial em `/srv/homelab`.
 
 ## Provisionamento do host (US-001) e Docker (US-002)
-- Para preparar o Raspberry Pi (Debian/Ubuntu) com usuário `homelab`, SSH por chave e atualizações automáticas, use os scripts em `infra/provision/`.
+- Para preparar o Raspberry Pi (Debian/Ubuntu) com usuário `homelab`, SSH por chave e atualizações automáticas, use os scripts e
+m `infra/provision/`.
 - Automação de Docker/Compose e validação de hello-world também ficam em `infra/provision/`.
 - Execução típica:
   ```bash
@@ -82,6 +84,14 @@ make logs-infra
 # Executar testes de fumaça (usa docker compose da pasta infra)
 make test
 ```
+
+## TLS automático via Traefik (US-010)
+- Traefik já está configurado com redirecionamento HTTP→HTTPS e resolver ACME usando Let's Encrypt (staging por padrão via
+  `ACME_CA_SERVER`).
+- Ajuste `HOMELAB_DOMAIN` e `ACME_EMAIL` no `.env`; para produção, troque `ACME_CA_SERVER` para o endpoint público do
+  Let's Encrypt.
+- O arquivo `acme.json` é persistido em `/srv/homelab/traefik` dentro do host; garanta permissões restritas (0600) após
+  primeira emissão.
 
 ## Próximos passos (backlog sugerido)
 - Configurar TLS completo via ACME (Let's Encrypt) no Traefik.
