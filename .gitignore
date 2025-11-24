@@ -1,1 +1,23 @@
-.
+# Artefatos de ambiente
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Logs e dados temporários
+*.log
+logs/
+
+# Docker
+*/.DS_Store
+*.bak
+*.swp
+
+# Backups e dumps
+*.tar
+*.tgz
+*.zip
+

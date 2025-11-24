@@ -1,0 +1,28 @@
+version: "3.9"
+
+# Stack de Git (Gitea/Forgejo). Mantida separada para ciclos independentes.
+services:
+  # TODO: escolher entre gitea/forgejo (imagens leves para ARM). Exemplo:
+  # gitea:
+  #   image: gitea/gitea:1.22
+  #   restart: unless-stopped
+  #   environment:
+  #     - USER_UID=1000
+  #     - USER_GID=1000
+  #   volumes:
+  #     - /srv/homelab/git/data:/data
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.gitea.rule=Host(`git.${HOMELAB_DOMAIN}`)"
+  #     - "traefik.http.routers.gitea.entrypoints=web"
+  #   networks:
+  #     - proxy_net
+  #     - internal_net
+
+networks:
+  proxy_net:
+    external: true
+    name: ${PROXY_NETWORK}
+  internal_net:
+    external: true
+    name: ${INTERNAL_NETWORK}

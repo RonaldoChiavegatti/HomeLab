@@ -1,0 +1,27 @@
+version: "3.9"
+
+# Stack de mídia (Jellyfin opcionalmente Plex). Priorizar imagens otimizadas para ARM.
+services:
+  # TODO: adicionar hardware acceleration configs (VAAPI) conforme GPU do Raspberry Pi.
+  # jellyfin:
+  #   image: jellyfin/jellyfin:latest
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /srv/homelab/media/jellyfin:/config
+  #     - /srv/homelab/media/library:/media
+  #     - /srv/homelab/media/transcodes:/cache
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.jellyfin.rule=Host(`media.${HOMELAB_DOMAIN}`)"
+  #     - "traefik.http.routers.jellyfin.entrypoints=web"
+  #   networks:
+  #     - proxy_net
+  #     - internal_net
+
+networks:
+  proxy_net:
+    external: true
+    name: ${PROXY_NETWORK}
+  internal_net:
+    external: true
+    name: ${INTERNAL_NETWORK}

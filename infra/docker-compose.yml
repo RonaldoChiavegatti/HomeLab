@@ -1,0 +1,54 @@
+version: "3.9"
+
+# Stack de infraestrutura: reverse proxy, pontos de entrada e serviços auxiliares.
+# Pensada para Raspberry Pi (imagens leves, ARM64 compatíveis).
+services:
+  traefik:
+    image: traefik:3.0
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:${TRAEFIK_HTTP_PORT}
+      - --entrypoints.websecure.address=:${TRAEFIK_HTTPS_PORT}
+      # TODO: habilitar ACME/Let's Encrypt quando houver DNS fixo
+      - --api.dashboard=true
+    ports:
+      - "${TRAEFIK_HTTP_PORT}:${TRAEFIK_HTTP_PORT}"
+      - "${TRAEFIK_HTTPS_PORT}:${TRAEFIK_HTTPS_PORT}"
+      - "${TRAEFIK_DASHBOARD_PORT}:8080" # dashboard local
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /srv/homelab/traefik:/etc/traefik
+    networks:
+      - proxy_net
+      - internal_net
+    labels:
+      # Dashboard exposto apenas internamente (ajustar conforme necessidade)
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${HOMELAB_DOMAIN}`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$example$$/hashedpass"
+
+  whoami:
+    image: traefik/whoami:latest
+    container_name: whoami
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.${HOMELAB_DOMAIN}`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.services.whoami.loadbalancer.server.port=80"
+    networks:
+      - proxy_net
+      - internal_net
+
+networks:
+  proxy_net:
+    name: ${PROXY_NETWORK}
+    driver: bridge
+  internal_net:
+    name: ${INTERNAL_NETWORK}
+    driver: bridge

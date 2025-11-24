@@ -1,0 +1,22 @@
+version: "3.9"
+
+# Stack de automação residencial (Home Assistant).
+services:
+  # TODO: adicionar dependências opcionais (MQTT, Zigbee2MQTT) em futuras histórias.
+  # homeassistant:
+  #   image: ghcr.io/home-assistant/home-assistant:stable
+  #   restart: unless-stopped
+  #   volumes:
+  #     - /srv/homelab/homeassistant:/config
+  #   environment:
+  #     - TZ=UTC
+  #   network_mode: host  # muitas integrações dependem de broadcast/mDNS; avaliar impacto de segurança
+  #   privileged: true    # pode ser pesado; revisar no Raspberry Pi
+
+networks:
+  proxy_net:
+    external: true
+    name: ${PROXY_NETWORK}
+  internal_net:
+    external: true
+    name: ${INTERNAL_NETWORK}
