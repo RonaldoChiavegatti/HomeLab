@@ -53,10 +53,47 @@ services:
       - proxy_net
       - internal_net
 
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:latest
+    container_name: wireguard
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+    environment:
+      # IDs padrão do usuário homelab para gerar configs com permissões corretas
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      # Endpoint pode ser domínio público (produção) ou nome do contêiner (labs/tests)
+      - SERVERURL=${WIREGUARD_ENDPOINT:-wireguard}
+      - SERVERPORT=${WIREGUARD_PORT:-51820}
+      # Gera peer1 automaticamente para facilitar onboarding/CI
+      - PEERS=1
+      - PEERDNS=1.1.1.1
+      - INTERNAL_SUBNET=${WIREGUARD_SUBNET:-10.13.13.0/24}
+      # Permite que o cliente acesse a LAN inteira via túnel (ajuste conforme política)
+      - ALLOWEDIPS=0.0.0.0/0,::/0
+    volumes:
+      - /srv/homelab/wireguard:/config
+      - /lib/modules:/lib/modules:ro
+    ports:
+      - "${WIREGUARD_PORT:-51820}:${WIREGUARD_PORT:-51820}/udp"
+    networks:
+      - internal_net
+      - vpn_net
+
 networks:
   proxy_net:
     name: ${PROXY_NETWORK:-proxy_net}
     driver: bridge
   internal_net:
     name: ${INTERNAL_NETWORK:-internal_net}
+    driver: bridge
+  vpn_net:
+    name: ${VPN_NETWORK:-vpn_net}
     driver: bridge
