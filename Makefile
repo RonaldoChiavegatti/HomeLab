@@ -18,6 +18,12 @@ docker-setup:
 validate-docker:
 	cd infra/provision && python3 validate_docker.py --user $(HOMELAB_USER)
 
+prepare-data-dirs:
+	cd infra/provision && python3 validate_data_dirs.py --create-missing
+
+validate-data-dirs:
+	cd infra/provision && python3 validate_data_dirs.py
+
 up-infra:
 	$(COMPOSE_INFRA) up -d
 
@@ -53,4 +59,4 @@ test:
 backup-dummy:
 	@echo "TODO: implementar rotina de backup incremental em /srv/homelab" && exit 0
 
-.PHONY: up-infra down-infra logs-infra up-core down-core logs-core up-apps down-apps logs-apps test backup-dummy provision-host validate-host docker-setup validate-docker
+.PHONY: up-infra down-infra logs-infra up-core down-core logs-core up-apps down-apps logs-apps test backup-dummy provision-host validate-host docker-setup validate-docker prepare-data-dirs validate-data-dirs
