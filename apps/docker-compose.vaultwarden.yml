@@ -13,6 +13,15 @@ services:
       - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-changeme}
       # Permite o cadastro do primeiro usuário/admin ao subir a stack
       - SIGNUPS_ALLOWED=${VAULTWARDEN_SIGNUPS_ALLOWED:-true}
+      # Configura SMTP para envio de OTP por e-mail (2FA)
+      - SMTP_HOST=${VAULTWARDEN_SMTP_HOST:-smtp.example.local}
+      - SMTP_FROM=${VAULTWARDEN_SMTP_FROM:-vaultwarden@example.local}
+      - SMTP_PORT=${VAULTWARDEN_SMTP_PORT:-587}
+      - SMTP_SSL=${VAULTWARDEN_SMTP_SSL:-false}
+      - SMTP_USERNAME=${VAULTWARDEN_SMTP_USERNAME:-vaultwarden}
+      - SMTP_PASSWORD=${VAULTWARDEN_SMTP_PASSWORD:-changeme}
+      - SMTP_TIMEOUT=${VAULTWARDEN_SMTP_TIMEOUT:-15}
+      - SMTP_EXPLICIT_TLS=${VAULTWARDEN_SMTP_EXPLICIT_TLS:-true}
       - LOG_LEVEL=info
     volumes:
       - /srv/homelab/vaultwarden/data:/data

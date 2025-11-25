@@ -59,14 +59,18 @@ $(COMPOSE_APPS) logs -f
 
 # Versionamento do homelab no Gitea
 publish-gitea:
-./apps/git/bootstrap_repo.sh
+	./apps/git/bootstrap_repo.sh
 
 # Testes básicos de fumaça (usa pytest)
 test:
-python -m venv .venv && . .venv/bin/activate && pip install -r tests/requirements.txt && pytest -q tests
+	python -m venv .venv && . .venv/bin/activate && pip install -r tests/requirements.txt && pytest -q tests
 
 # Backup do volume do Nextcloud
 backup-nextcloud:
-python core/nextcloud/backup_nextcloud.py
+	python core/nextcloud/backup_nextcloud.py
+
+# Backup do volume do Vaultwarden
+backup-vaultwarden:
+	python apps/vaultwarden/backup_vaultwarden.py
 
 .PHONY: up-infra down-infra logs-infra up-core down-core logs-core up-apps down-apps logs-apps publish-gitea test backup-nextcloud provision-host validate-host docker-setup validate-docker prepare-data-dirs validate-data-dirs configure-firewall validate-firewall

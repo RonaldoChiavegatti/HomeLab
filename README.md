@@ -102,6 +102,19 @@ Estrutura esperada no host (`/srv/homelab`):
   sudo systemctl start docker
   ```
 
+## 2FA e backup do Vaultwarden (US-051)
+- A 2FA via OTP por e-mail fica habilitada configurando SMTP no `.env` (variáveis `VAULTWARDEN_SMTP_*` já referenciadas no
+  compose do Vaultwarden).
+- Script `apps/vaultwarden/backup_vaultwarden.py` gera snapshots incrementais do volume `/srv/homelab/vaultwarden/data` usando
+  `rsync` e mantém um link simbólico `latest` para o backup mais recente.
+- Ajuste `VAULTWARDEN_BACKUP_SOURCE`, `VAULTWARDEN_BACKUP_TARGET`, `VAULTWARDEN_BACKUP_LOG` e
+  `VAULTWARDEN_BACKUP_RETENTION` no `.env` para personalizar caminhos/retentiva.
+- Execução manual:
+  ```bash
+  make backup-vaultwarden
+  python apps/vaultwarden/backup_vaultwarden.py --dry-run  # apenas imprime comando rsync
+  ```
+
 ## Uso rápido
 ```
 # Subir apenas a stack de infraestrutura (Traefik + whoami de teste)
