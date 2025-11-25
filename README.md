@@ -131,6 +131,24 @@ make test
 - Teste E2E em `tests/test_gitea.py` cobre criação de usuário via API, criação de repo e ciclo completo de clone/push via
   container `alpine/git` (útil para validar pipeline CI/CD on-premise).
 
+## Versionamento da infra no Gitea (US-041)
+- Com o Gitea rodando (infra + stack git), use `apps/git/bootstrap_repo.sh` para criar o repositório `homelab-infra` no
+  usuário admin e publicar a branch atual.
+- Pré-requisitos: `.env` com `GITEA_ADMIN_USER`/`GITEA_ADMIN_PASSWORD` e `HOMELAB_DOMAIN` preenchidos e árvore git limpa
+  (o script aborta se houver alterações pendentes).
+- Fluxo sugerido:
+  ```bash
+  make up-infra  # garante Traefik
+  docker compose -f apps/docker-compose.git.yml up -d  # sobe apenas o Gitea
+
+  ./apps/git/bootstrap_repo.sh
+
+  git remote -v           # confirma remote "gitea"
+  git ls-remote gitea     # valida acesso/credenciais
+  ```
+- O script cria token de API temporário, provisiona o repo como privado e faz push da HEAD para `main` (padrão
+  configurável via `GITEA_DEFAULT_BRANCH`).
+
 ## Próximos passos (backlog sugerido)
 - Configurar TLS completo via ACME (Let's Encrypt) no Traefik.
 - Adicionar WireGuard (VPN) à stack infra.
