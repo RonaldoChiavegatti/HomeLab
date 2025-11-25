@@ -122,6 +122,15 @@ make test
 - O arquivo `acme.json` é persistido em `/srv/homelab/traefik` dentro do host; garanta permissões restritas (0600) após
   primeira emissão.
 
+## Gitea integrado ao proxy (US-040)
+- Stack definida em `apps/docker-compose.git.yml`, usando imagem `gitea/gitea:1.22` (multi-arch, leve para ARM) com
+  banco SQLite persistido em `/srv/homelab/git`.
+- Admin inicial criado automaticamente via variáveis `GITEA_ADMIN_USER`, `GITEA_ADMIN_PASSWORD` e `GITEA_ADMIN_EMAIL`
+  definidas no `.env`; o `GITEA_SECRET_KEY` também deve ser preenchido antes de subir em produção.
+- Exposto via Traefik em `https://git.<HOMELAB_DOMAIN>` usando a rede `proxy_net` compartilhada.
+- Teste E2E em `tests/test_gitea.py` cobre criação de usuário via API, criação de repo e ciclo completo de clone/push via
+  container `alpine/git` (útil para validar pipeline CI/CD on-premise).
+
 ## Próximos passos (backlog sugerido)
 - Configurar TLS completo via ACME (Let's Encrypt) no Traefik.
 - Adicionar WireGuard (VPN) à stack infra.
