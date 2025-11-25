@@ -3,15 +3,23 @@ version: "3.9"
 # Stack de automação residencial (Home Assistant).
 services:
   # TODO: adicionar dependências opcionais (MQTT, Zigbee2MQTT) em futuras histórias.
-  # homeassistant:
-  #   image: ghcr.io/home-assistant/home-assistant:stable
-  #   restart: unless-stopped
-  #   volumes:
-  #     - /srv/homelab/homeassistant:/config
-  #   environment:
-  #     - TZ=UTC
-  #   network_mode: host  # muitas integrações dependem de broadcast/mDNS; avaliar impacto de segurança
-  #   privileged: true    # pode ser pesado; revisar no Raspberry Pi
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    volumes:
+      - /srv/homelab/homeassistant:/config
+    environment:
+      - TZ=${TZ:-UTC}
+    network_mode: host  # muitas integrações dependem de broadcast/mDNS; avaliar impacto de segurança
+    privileged: true    # pode ser pesado; revisar no Raspberry Pi
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homeassistant.rule=Host(`ha.${HOMELAB_DOMAIN}`)"
+      - "traefik.http.routers.homeassistant.entrypoints=websecure"
+      - "traefik.http.routers.homeassistant.tls=true"
+      - "traefik.http.routers.homeassistant.tls.certresolver=letsencrypt"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
 
 networks:
   proxy_net:
