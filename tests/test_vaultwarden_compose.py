@@ -19,6 +19,8 @@ def test_vaultwarden_compose_declares_https_route_and_data_dir():
     assert "DOMAIN=https://pw.${HOMELAB_DOMAIN:-example.local}" in content
     assert "ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-changeme}" in content
     assert "SIGNUPS_ALLOWED=${VAULTWARDEN_SIGNUPS_ALLOWED:-true}" in content
+    assert "SMTP_HOST=${VAULTWARDEN_SMTP_HOST:-smtp.example.local}" in content
+    assert "SMTP_FROM=${VAULTWARDEN_SMTP_FROM:-vaultwarden@example.local}" in content
     assert "traefik.http.routers.vaultwarden.rule=Host(`pw.${HOMELAB_DOMAIN}`)" in content
     assert "traefik.http.routers.vaultwarden.entrypoints=websecure" in content
     assert "traefik.http.routers.vaultwarden.tls=true" in content
