@@ -36,10 +36,10 @@ def test_list_missing_directories(tmp_path: Path):
 
 def test_create_directories(tmp_path: Path):
     base = tmp_path / "homelab"
-    created = validate_data_dirs.create_directories(base, ["vaultwarden", "media/jellyfin"])
-    assert (base / "vaultwarden").is_dir()
+    created = validate_data_dirs.create_directories(base, ["vaultwarden/data", "media/jellyfin"])
+    assert (base / "vaultwarden/data").is_dir()
     assert (base / "media/jellyfin").is_dir()
-    assert set(created) == {base / "vaultwarden", base / "media/jellyfin"}
+    assert set(created) == {base / "vaultwarden/data", base / "media/jellyfin"}
 
 
 def test_main_reports_missing_dirs(tmp_path: Path, capsys):

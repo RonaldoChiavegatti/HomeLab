@@ -2,21 +2,30 @@ version: "3.9"
 
 # Stack de cofres/segredos (Vaultwarden compatível com Bitwarden).
 services:
-  # TODO: habilitar imagem vaultwarden/server:alpine (leve para ARM).
-  # vaultwarden:
-  #   image: vaultwarden/server:alpine
-  #   restart: unless-stopped
-  #   environment:
-  #     - WEBSOCKET_ENABLED=true
-  #   volumes:
-  #     - /srv/homelab/vaultwarden:/data
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.vaultwarden.rule=Host(`vault.${HOMELAB_DOMAIN}`)"
-  #     - "traefik.http.routers.vaultwarden.entrypoints=websecure"
-  #   networks:
-  #     - proxy_net
-  #     - internal_net
+  vaultwarden:
+    image: vaultwarden/server:alpine
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - DOMAIN=https://pw.${HOMELAB_DOMAIN:-example.local}
+      - WEBSOCKET_ENABLED=true
+      # Define token para acessar /admin e finalizar configuração inicial
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-changeme}
+      # Permite o cadastro do primeiro usuário/admin ao subir a stack
+      - SIGNUPS_ALLOWED=${VAULTWARDEN_SIGNUPS_ALLOWED:-true}
+      - LOG_LEVEL=info
+    volumes:
+      - /srv/homelab/vaultwarden/data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.rule=Host(`pw.${HOMELAB_DOMAIN}`)"
+      - "traefik.http.routers.vaultwarden.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden.tls=true"
+      - "traefik.http.routers.vaultwarden.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
+    networks:
+      - proxy_net
+      - internal_net
 
 networks:
   proxy_net:
