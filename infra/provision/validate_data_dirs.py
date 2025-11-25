@@ -21,7 +21,7 @@ EXPECTED_DIRECTORIES = [
     "nextcloud/redis",
     "nextcloud/data",
     "git",
-    "vaultwarden",
+    "vaultwarden/data",
     "media/jellyfin",
     "media/library",
     "media/transcodes",
